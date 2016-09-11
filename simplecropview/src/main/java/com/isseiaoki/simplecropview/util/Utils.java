@@ -16,6 +16,7 @@ import android.os.Environment;
 import android.os.ParcelFileDescriptor;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
+import android.webkit.MimeTypeMap;
 
 import java.io.Closeable;
 import java.io.File;
@@ -95,6 +96,48 @@ public class Utils {
                 break;
         }
         return degree;
+    }
+
+    public static String getMimeType(Context context, Uri uri) {
+        String authority = uri.getAuthority().toLowerCase();
+        String mimeType;
+        if (authority.endsWith("media")) {
+            mimeType = getMimeTypeFromUri(context, uri);
+        } else {
+            mimeType = getMimeType(getFileFromUri(context, uri));
+        }
+        return mimeType;
+    }
+
+    public static String getMimeTypeFromUri(Context context, Uri uri) {
+        Cursor cursor = null;
+        String[] projection = {MediaStore.Images.ImageColumns.MIME_TYPE};
+        try {
+            cursor = context.getContentResolver().query(uri, projection, null, null, null);
+            if (cursor == null || !cursor.moveToFirst()) {
+                return "";
+            }
+            return cursor.getString(0);
+        } catch (RuntimeException ignored) {
+            return "";
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+    }
+
+    public static String getMimeType(File file) {
+        if(file == null) return "";
+        String ext = null;
+        String s = file.getName();
+        int i = s.lastIndexOf('.');
+
+        if (i > 0 && i < s.length() - 1) {
+            ext = s.substring(i + 1).toLowerCase();
+        }
+        String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext);
+        return mimeType != null ? mimeType : "";
     }
 
     public static Matrix getMatrixFromExifOrientation(int orientation) {

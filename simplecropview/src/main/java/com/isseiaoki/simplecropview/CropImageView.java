@@ -1613,12 +1613,9 @@ public class CropImageView extends ImageView {
             public void run() {
                 Bitmap cropped;
 
-                // Use thumbnail for crop
-                if (mSourceUri == null) {
-                    cropped = getCroppedBitmap();
-                }
-                // Use file for crop
-                else {
+                String imageMimeType = mSourceUri == null ? "" : Utils.getMimeType(getContext(), mSourceUri);
+                if (imageMimeType.equalsIgnoreCase("image/png") || imageMimeType.equalsIgnoreCase("image/jpeg")) {
+                    // Use file for crop
                     cropped = decodeRegion();
                     if (mCropMode == CropMode.CIRCLE) {
                         Bitmap circle = getCircularBitmap(cropped);
@@ -1627,6 +1624,10 @@ public class CropImageView extends ImageView {
                         }
                         cropped = circle;
                     }
+                }
+                else {
+                    // Use thumbnail for crop
+                    cropped = getCroppedBitmap();
                 }
 
                 // Success
